@@ -44,7 +44,7 @@ const (
 
 // Instruction encoding in 32 bits
 type Inst struct {
-	OpCode    uint16 // operation code (10 bits)
+	OpCode    int16  // operation code (10 bits)
 	Register1 uint8  // 1st register number (3 bits)
 	Register2 uint8  // 2nd register number (3 bits)
 	Arg       uint16 // argument (16 bits)
@@ -57,7 +57,37 @@ type PSW struct {
 	SE int32   // segment end
 	IN int32   // interrupt number
 	DR []int32 // data registers
-	IR Inst    // instruction registers
+	RI Inst    // instruction registers
+}
+
+func (p *PSW) dumpCPU() {
+	interrupts := []string{
+		"NONE", "SEGV", "INST", "TRACE", "SYSC", "KEYB",
+	}
+	fmt.Printf("PC = %6d | ", p.PC)
+	if p.IN < 6 {
+		fmt.Printf("IN = %6s\n", interrupts[p.IN])
+	} else {
+		fmt.Printf("IN = %6d\n", p.IN)
+	}
+	fmt.Printf("SB = %6d | SE = %6d\n", p.SB, p.SE)
+	for i := 0; i < 8; i = i + 2 {
+		fmt.Printf("R%d = %6d | R%d = %6d\n", i, p.DR[i], i+1, p.DR[i+1])
+	}
+	// fprintf(stdout, "RI  = %s R%d, R%d, %d \n", name, m.RI.i, m.RI.j, m.RI.arg);
+	var name string
+
+	instructions := []string{
+		"ADD", "HALT", "IFGT", "IFGE", "IFLT", "IFLE",
+		"JUMP", "LOAD",
+		"NOP", "SET", "STORE", "SUB", "SYSC",
+	}
+	if p.RI.OpCode < 13 {
+		name = instructions[p.RI.OpCode]
+	} else {
+		name = "?"
+	}
+	fmt.Printf("RI  = %s R%d, R%d, %d \n", name, p.RI.Register1, p.RI.Register2, p.RI.Arg)
 }
 
 func isPhysicalAddr(a int32) bool {
@@ -73,22 +103,27 @@ func cpuInit() {
 	// word == Inst.Size
 }
 
-func systemInit() {
+func systemInit() *PSW {
 	fmt.Println("Booting...")
-	psw := PSW{
+	psw := &PSW{
 		PC: 20,
 		SB: 20,
 		SE: 30,
+		DR: make([]int32, 8),
 	}
 	assemble(psw.SB, os.Args[1])
+	return psw
+}
+
+func cpu() {
+	initCPU()
 }
 
 func main() {
 	usedLabels = make([]*UsedLabel, 0)
 	labels = make([]*Label, 0)
-	systemInit()
+	psw := systemInit()
 	fmt.Println(mem)
-	// for {
-	//
-	// }
+	fmt.Println(psw)
+	psw.dumpCPU()
 }

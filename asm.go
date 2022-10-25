@@ -217,12 +217,11 @@ func assembleLine(line string) {
 		panic(fmt.Sprintf("Incorrect instruction %+v", token))
 	}
 	if token.Type == TOKEN_TYPE_INST && token.Value == INST_DEFINE {
-		fmt.Println("DEFINEEE")
 		assembleDefine(&line)
 		return
 
 	}
-	inst.OpCode = uint16(token.Value)
+	inst.OpCode = int16(token.Value)
 	token = tokenize(&line)
 	if token.Type == TOKEN_TYPE_NULL {
 		MakeInst(logical_adr, inst)
@@ -245,7 +244,9 @@ func assembleLine(line string) {
 	if token.Type != TOKEN_TYPE_NULL {
 		panic("instruction incorrecte")
 	}
-	if inst.OpCode == 1023 {
+	//
+	fmt.Println(inst.OpCode)
+	if inst.OpCode == int16(INST_DATA) {
 		writeMem(logical_adr, 0)
 	} else {
 		MakeInst(logical_adr, inst)
