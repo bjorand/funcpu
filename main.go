@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 )
 
 // setup
@@ -24,7 +25,7 @@ const (
 
 // CPU instruction codes
 const (
-	INST_ADD = iota
+	INST_ADD = iota + 1
 	INST_HALT
 	INST_IFGT
 	INST_IFGE
@@ -37,6 +38,8 @@ const (
 	INST_STORE
 	INST_SUB
 	INST_SYSC
+	INST_DATA   = -1
+	INST_DEFINE = -2
 )
 
 // Instruction encoding in 32 bits
@@ -77,11 +80,14 @@ func systemInit() {
 		SB: 20,
 		SE: 30,
 	}
-	assemble(psw.SB, "../../../../../PERSO/cpu/simul/prog1.asm")
+	assemble(psw.SB, os.Args[1])
 }
 
 func main() {
+	usedLabels = make([]*UsedLabel, 0)
+	labels = make([]*Label, 0)
 	systemInit()
+	fmt.Println(mem)
 	// for {
 	//
 	// }
