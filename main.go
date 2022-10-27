@@ -74,15 +74,13 @@ func (p *PSW) dumpCPU() {
 	for i := 0; i < 8; i = i + 2 {
 		fmt.Printf("R%d = %6d | R%d = %6d\n", i, p.DR[i], i+1, p.DR[i+1])
 	}
-	// fprintf(stdout, "RI  = %s R%d, R%d, %d \n", name, m.RI.i, m.RI.j, m.RI.arg);
 	var name string
-
 	instructions := []string{
 		"ADD", "HALT", "IFGT", "IFGE", "IFLT", "IFLE",
 		"JUMP", "LOAD",
 		"NOP", "SET", "STORE", "SUB", "SYSC",
 	}
-	if p.RI.OpCode < 13 {
+	if p.RI.OpCode < INST_SYSC {
 		name = instructions[p.RI.OpCode]
 	} else {
 		name = "?"
@@ -115,15 +113,35 @@ func systemInit() *PSW {
 	return psw
 }
 
-func cpu() {
+func ReadLogicalMem(logicalAddr int32, psw *PSW) int32 {
+	if !isLogicalAddr(logicalAddr, psw) {
+		psw.IN = INT_SEGV
+		return 0
+	}
+	return readMem(logicalAddr)
+
+}
+
+func (psw *PSW) CPU() {
 	initCPU()
+
+	psw.IN = INT_NONE
+
+	//  m = keyboard_event(m);
+	// if (m.IN) return (m);
+
+	value := ReadLogicalMem(psw.PC, psw)
+	if psw.IN == INT_NONE {
+		return
+	}
+	fmt.Println(value)
+	// psw.RI = InstructionDecode(value)
 }
 
 func main() {
 	usedLabels = make([]*UsedLabel, 0)
 	labels = make([]*Label, 0)
 	psw := systemInit()
-	fmt.Println(mem)
-	fmt.Println(psw)
+	psw.CPU()
 	psw.dumpCPU()
 }

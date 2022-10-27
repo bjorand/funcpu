@@ -28,6 +28,17 @@ func InstructionEncode(inst *Inst) int32 {
 		int32(math.Pow(2, 16))*int32(inst.Arg)
 }
 
+func InstructionDecode(int32) *Inst {
+
+	return &Inst{
+		OpCode:    1,
+		Register1: 1,
+		Register2: 1,
+		Arg:       1,
+	}
+
+}
+
 func writeMem(physicalAddr int, value int32) {
 	initCPU()
 	// if (! IS_PHYSICAL_ADR(physical_address)) {
@@ -38,4 +49,13 @@ func writeMem(physicalAddr int, value int32) {
 		panic(fmt.Sprintf("writeMem: bad address %d", physicalAddr))
 	}
 	mem[physicalAddr] = value
+}
+
+func readMem(physicalAddr int32) int32 {
+	initCPU()
+	if !isPhysicalAddr(int32(physicalAddr)) {
+		panic(fmt.Sprintf("readMem: bad address %d", physicalAddr))
+	}
+
+	return mem[physicalAddr]
 }
